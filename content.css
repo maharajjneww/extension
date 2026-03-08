@@ -1,0 +1,38 @@
+#quiz-assistant-popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  color: black;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 999999;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  max-width: 200px;
+  word-wrap: break-word;
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+  border: 2px solid #ddd;
+}
+
+@media (prefers-color-scheme: dark) {
+  #quiz-assistant-popup {
+    background: black;
+    color: white;
+    border: 2px solid #444;
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

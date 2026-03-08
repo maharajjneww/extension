@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Extension Icons</title>
+</head>
+<body>
+  <h2>Icon Generator</h2>
+  <p>Click the buttons below to download icons for your extension:</p>
+  <button onclick="createIcon(16)">Download 16x16 Icon</button>
+  <button onclick="createIcon(48)">Download 48x48 Icon</button>
+  <button onclick="createIcon(128)">Download 128x128 Icon</button>
+  
+  <script>
+    function createIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Letter Q
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.6}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Q', size / 2, size / 2);
+      
+      // Download
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `icon${size}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Extension - Admin Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #333; margin-bottom: 30px; }
+    .section { margin-bottom: 40px; }
+    h2 { color: #4CAF50; margin-bottom: 15px; font-size: 20px; }
+    input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    button { padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #45a049; }
+    button.danger { background: #f44336; }
+    button.danger:hover { background: #da190b; }
+    .status { padding: 10px; margin-top: 10px; border-radius: 4px; display: none; }
+    .status.success { background: #d4edda; color: #155724; display: block; }
+    .status.error { background: #f8d7da; color: #721c24; display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #4CAF50; color: white; }
+    tr:hover { background: #f5f5f5; }
+    .active { color: green; font-weight: bold; }
+    .inactive { color: red; font-weight: bold; }
+    .actions button { padding: 6px 12px; margin-right: 5px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Quiz Extension - Admin Panel</h1>
+    
+    <!-- Login Section -->
+    <div id="loginSection" class="section">
+      <h2>Admin Login</h2>
+      <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+      <button onclick="login()">Login</button>
+      <div id="loginStatus" class="status"></div>
+    </div>
+    
+    <!-- Admin Panel (hidden until login) -->
+    <div id="adminPanel" style="display: none;">
+      
+      <!-- Create License -->
+      <div class="section">
+        <h2>Create New License</h2>
+        <input type="text" id="newLicenseKey" placeholder="License Key (e.g., QUIZ-2024-PREMIUM)">
+        <input type="email" id="newEmail" placeholder="User Email">
+        <select id="newPlan">
+          <option value="Trial">Trial</option>
+          <option value="Student">Student</option>
+          <option value="Premium">Premium</option>
+          <option value="Lifetime">Lifetime</option>
+        </select>
+        <input type="date" id="newExpiryDate" placeholder="Expiry Date (leave empty for lifetime)">
+        <button onclick="createLicense()">Create License</button>
+        <div id="createStatus" class="status"></div>
+      </div>
+      
+      <!-- Manage Licenses -->
+      <div class="section">
+        <h2>All Licenses</h2>
+        <button onclick="loadLicenses()">Refresh List</button>
+        <div id="licensesTable"></div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <script>
+    const API_URL = window.location.origin; // Use same domain as the page
+    let adminPass = '';
+    
+    function login() {
+      adminPass = document.getElementById('adminPassword').value;
+      if (!adminPass) {
+        showStatus('loginStatus', 'Please enter password', 'error');
+        return;
+      }
+      
+      // Test the password by trying to list licenses
+      fetch(`${API_URL}/api/admin/list-licenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: adminPass })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === 'Unauthorized') {
+          showStatus('loginStatus', 'Invalid password', 'error');
+        } else {
+          document.getElementById('loginSection').style.display = 'none';
+          document.getElementById('adminPanel').style.display = 'block';
+          loadLicenses();
+        }
+      })
+      .catch(err => {
+        showStatus('loginStatus', 'Connection error', 'error');
+      });
+    }
+    
+    function createLicense() {
+      const licenseKey = document.getElementById('newLicenseKey').value;
+      const email = document.getElementById('newEmail').value;
+      const plan = document.getElementById('newPlan').value;
+      const expiryDate = document.getElementById('newExpiryDate').value;
+      
+      if (!licenseKey || !email) {
+        showStatus('createStatus', 'Please fill all required fields', 'error');
+        return;
+      }
+      
+      fetch(`${API_URL}/api/admin/create-license`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminPassword: adminPass,
+          licenseKey,
+          email,
+          plan,
+          expiryDate: expiryDate || null
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === 'License created successfully') {
+          showStatus('createStatus', 'License created successfully!', 'success');
+          document.getElementById('newLicenseKey').value = '';
+          document.getElementById('newEmail').value = '';
+          document.getElementById('newExpiryDate').value = '';
+          loadLicenses();
+        } else {
+          showStatus('createStatus', data.message, 'error');
+        }
+      })
+      .catch(err => {
+        showStatus('createStatus', 'Error creating license', 'error');
+      });
+    }
+    
+    function loadLicenses() {
+      fetch(`${API_URL}/api/admin/list-licenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: adminPass })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.licenses) {
+          displayLicenses(data.licenses);
+        }
+      })
+      .catch(err => console.error('Error loading licenses:', err));
+    }
+    
+    function displayLicenses(licenses) {
+      let html = '<table><tr><th>License Key</th><th>Email</th><th>Plan</th><th>Status</th><th>Expiry</th><th>Last Used</th><th>Actions</th></tr>';
+      
+      licenses.forEach(license => {
+        const status = license.active ? '<span class="active">Active</span>' : '<span class="inactive">Inactive</span>';
+        const expiry = license.expiryDate ? new Date(license.expiryDate).toLocaleDateString() : 'Never';
+        const lastUsed = new Date(license.lastUsed).toLocaleString();
+        
+        html += `<tr>
+          <td>${license.licenseKey}</td>
+          <td>${license.email}</td>
+          <td>${license.plan}</td>
+          <td>${status}</td>
+          <td>${expiry}</td>
+          <td>${lastUsed}</td>
+          <td class="actions">
+            ${license.active ? 
+              `<button class="danger" onclick="deactivateLicense('${license.licenseKey}')">Deactivate</button>` :
+              `<button onclick="activateLicense('${license.licenseKey}')">Activate</button>`
+            }
+            <button class="danger" onclick="deleteLicense('${license.licenseKey}')">Delete</button>
+          </td>
+        </tr>`;
+      });
+      
+      html += '</table>';
+      document.getElementById('licensesTable').innerHTML = html;
+    }
+    
+    function deactivateLicense(licenseKey) {
+      if (!confirm(`Deactivate license ${licenseKey}? User will lose access immediately.`)) return;
+      
+      fetch(`${API_URL}/api/admin/deactivate-license`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: adminPass, licenseKey })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        loadLicenses();
+      });
+    }
+    
+    function activateLicense(licenseKey) {
+      fetch(`${API_URL}/api/admin/activate-license`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: adminPass, licenseKey })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        loadLicenses();
+      });
+    }
+    
+    function deleteLicense(licenseKey) {
+      if (!confirm(`Permanently delete license ${licenseKey}? This cannot be undone.`)) return;
+      
+      fetch(`${API_URL}/api/admin/delete-license`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: adminPass, licenseKey })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        loadLicenses();
+      });
+    }
+    
+    function showStatus(id, message, type) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.className = `status ${type}`;
+    }
+  </script>
+</body>
+</html>
