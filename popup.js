@@ -1,5 +1,5 @@
 // Your backend API URL
-const API_URL = 'http://localhost:3000'; // Backend server URL
+const API_URL = 'https://extension-kiek.onrender.com'; // Backend server URL
 
 document.addEventListener('DOMContentLoaded', async () => {
   const isLoggedIn = await checkLoginStatus();

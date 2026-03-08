@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function verifyLicenseWithServer(licenseKey) {
-  const API_URL = 'http://localhost:3000';
+  const API_URL = 'https://extension-kiek.onrender.com';
   
   try {
     console.log('Background: Verifying license with server...');

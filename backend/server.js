@@ -207,6 +207,19 @@ app.post('/api/admin/delete-license', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  
+  // Keep-alive: Ping self every 5 minutes to prevent Render free tier sleep
+  const PING_INTERVAL = 5 * 60 * 1000; // 5 minutes
+  const SERVER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  
+  setInterval(() => {
+    fetch(`${SERVER_URL}/`)
+      .then(res => res.json())
+      .then(data => console.log('✅ Keep-alive ping:', new Date().toLocaleTimeString()))
+      .catch(err => console.error('❌ Keep-alive ping failed:', err.message));
+  }, PING_INTERVAL);
+  
+  console.log('⏰ Keep-alive pings enabled (every 5 minutes)');
 });

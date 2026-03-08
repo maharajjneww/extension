@@ -1,5 +1,5 @@
 const API_KEY = 'sk-9eaf00902e6d41ffb5b60f076a6e16ed';
-const API_URL = 'http://localhost:3000'; // Backend server URL
+const API_URL = 'https://extension-kiek.onrender.com'; // Backend server URL
 let answerPopup = null;
 
 document.addEventListener('mouseup', async () => {
