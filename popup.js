@@ -21,19 +21,14 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     return;
   }
   
-  // Call your backend API to verify license
+  // Call backend API via background worker to verify license
   try {
-    const response = await fetch(`${API_URL}/api/verify-license`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ licenseKey: licenseKey })
+    const result = await chrome.runtime.sendMessage({
+      action: 'loginWithLicense',
+      licenseKey: licenseKey
     });
     
-    const result = await response.json();
-    
-    if (response.ok && result.valid) {
+    if (result && result.valid) {
       // Save login info with verification timestamp
       await chrome.storage.sync.set({
         isLoggedIn: true,
@@ -71,19 +66,14 @@ async function checkLoginStatus() {
     return false;
   }
   
-  // Verify with server that license is still valid
+  // Verify with server via background worker
   try {
-    const response = await fetch(`${API_URL}/api/verify-license`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ licenseKey: data.licenseKey })
+    const result = await chrome.runtime.sendMessage({
+      action: 'verifyLicense',
+      licenseKey: data.licenseKey
     });
     
-    const result = await response.json();
-    
-    if (!response.ok || !result.valid) {
+    if (!result || !result.valid) {
       // License is no longer valid, logout
       await chrome.storage.sync.clear();
       return false;

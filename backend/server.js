@@ -16,6 +16,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-panel.html'));
 });
 
+// Serve privacy policy at /privacy
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'privacy-policy.html'));
+});
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
@@ -24,6 +29,22 @@ mongoose.connect(process.env.MONGODB_URI)
 // Health check
 app.get('/', (req, res) => {
   res.json({ status: 'Quiz Extension API is running' });
+});
+
+// Keep-alive status endpoint
+let lastPingTime = null;
+app.get('/ping-status', (req, res) => {
+  const now = Date.now();
+  const secondsSinceLastPing = lastPingTime ? Math.floor((now - lastPingTime) / 1000) : null;
+  const nextPingIn = lastPingTime ? Math.max(0, 300 - secondsSinceLastPing) : 300;
+  
+  res.json({
+    keepAliveEnabled: true,
+    lastPingTime: lastPingTime ? new Date(lastPingTime).toISOString() : 'Not yet pinged',
+    secondsSinceLastPing: secondsSinceLastPing,
+    nextPingIn: `${nextPingIn} seconds`,
+    pingInterval: '5 minutes (300 seconds)'
+  });
 });
 
 // Verify license endpoint (called by extension)
@@ -215,6 +236,8 @@ const server = app.listen(PORT, () => {
   const SERVER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
   
   setInterval(() => {
+    const now = Date.now();
+    lastPingTime = now;
     fetch(`${SERVER_URL}/`)
       .then(res => res.json())
       .then(data => console.log('✅ Keep-alive ping:', new Date().toLocaleTimeString()))

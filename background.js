@@ -8,6 +8,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
   
+  if (request.action === 'loginWithLicense') {
+    verifyLicenseWithServer(request.licenseKey)
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ valid: false, message: 'Connection error' }));
+    return true;
+  }
+  
   if (request.action === 'getAnswer') {
     getAnswerFromAPI(request.question)
       .then(answer => {
