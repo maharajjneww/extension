@@ -29,6 +29,11 @@ app.get('/purchase', (req, res) => {
   res.sendFile(path.join(__dirname, 'purchase.html'));
 });
 
+// Serve forgot license page at /forgot-license
+app.get('/forgot-license', (req, res) => {
+  res.sendFile(path.join(__dirname, 'forgot-license.html'));
+});
+
 // Serve privacy policy at /privacy
 app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'privacy-policy.html'));
@@ -273,12 +278,13 @@ app.post('/api/create-order', async (req, res) => {
 // Payment: Verify payment and generate license
 app.post('/api/verify-payment', async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, email } = req.body;
     
     console.log('Payment verification request:', {
       order_id: razorpay_order_id,
       payment_id: razorpay_payment_id,
-      signature: razorpay_signature ? 'present' : 'missing'
+      signature: razorpay_signature ? 'present' : 'missing',
+      email: email
     });
     
     // Check if all required fields are present
@@ -321,7 +327,7 @@ app.post('/api/verify-payment', async (req, res) => {
     // Create license in database
     const license = new License({
       licenseKey,
-      email: 'customer@payment.com',
+      email: email ? email.toLowerCase().trim() : 'customer@payment.com',
       plan: 'Monthly',
       expiryDate,
       active: true
@@ -329,7 +335,7 @@ app.post('/api/verify-payment', async (req, res) => {
     
     await license.save();
     
-    console.log('License created successfully:', licenseKey);
+    console.log('License created successfully:', licenseKey, 'for email:', email);
     
     res.json({
       success: true,
@@ -342,6 +348,59 @@ app.post('/api/verify-payment', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Verification failed: ' + error.message 
+    });
+  }
+});
+
+// Retrieve license by email
+app.post('/api/retrieve-license', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+    
+    console.log('License retrieval request for email:', email);
+    
+    // Find the most recent active license for this email
+    const license = await License.findOne({ 
+      email: email.toLowerCase().trim(),
+      active: true 
+    }).sort({ createdAt: -1 });
+    
+    if (!license) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active license found for this email address'
+      });
+    }
+    
+    // Check if expired
+    if (license.expiryDate && new Date() > license.expiryDate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Your license has expired. Please purchase a new one.'
+      });
+    }
+    
+    console.log('License found:', license.licenseKey);
+    
+    res.json({
+      success: true,
+      licenseKey: license.licenseKey,
+      expiryDate: license.expiryDate,
+      plan: license.plan
+    });
+    
+  } catch (error) {
+    console.error('License retrieval error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving license. Please try again.'
     });
   }
 });

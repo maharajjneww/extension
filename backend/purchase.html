@@ -69,6 +69,14 @@
         <h2 style="color: #333; margin-bottom: 10px;">Pricing</h2>
         <div class="price">₹200/month</div>
         <p class="price-note">Monthly subscription • Cancel anytime • Instant activation</p>
+        
+        <!-- Email input for license recovery -->
+        <div style="margin: 20px auto; max-width: 400px;">
+          <input type="email" id="userEmail" placeholder="Enter your email (for license recovery)" 
+                 style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px;">
+          <p style="font-size: 12px; color: #666;">We'll send your license key to this email</p>
+        </div>
+        
         <button class="cta-button" onclick="initiatePayment()">Subscribe Now</button>
       </div>
 
@@ -78,16 +86,24 @@
           <a href="https://chrome.google.com/webstore" target="_blank" style="color: #4CAF50;">Chrome Web Store</a> | 
           <a href="https://addons.mozilla.org" target="_blank" style="color: #4CAF50;">Firefox Add-ons</a>
         </p>
+        <p style="margin-top: 15px;">
+          <a href="/forgot-license" style="color: #4CAF50; text-decoration: underline;">Forgot your license key?</a>
+        </p>
       </div>
     </div>
 
     <!-- Success Screen -->
     <div id="successScreen" class="success-screen">
       <h1 style="color: #4CAF50; margin-bottom: 20px;">🎉 Payment Successful!</h1>
-      <p style="color: #666; margin-bottom: 20px;">Your license key has been generated</p>
+      <p style="color: #666; margin-bottom: 10px;">Your license key has been generated</p>
+      <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Sent to: <strong id="userEmailDisplay"></strong></p>
       
       <div class="license-key" id="licenseKeyDisplay">Loading...</div>
       <button class="copy-button" onclick="copyLicenseKey()">📋 Copy License Key</button>
+      
+      <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 14px; color: #0066cc;">
+        <strong>⚠️ Important:</strong> Save this license key! If you lose it, use the "Forgot License Key" option on the purchase page with your email.
+      </div>
       
       <div class="instructions">
         <h3>📖 How to Activate:</h3>
@@ -111,11 +127,28 @@
   <script>
     async function initiatePayment() {
       try {
+        // Get user email
+        const email = document.getElementById('userEmail').value.trim();
+        
+        if (!email) {
+          alert('Please enter your email address for license recovery');
+          document.getElementById('userEmail').focus();
+          return;
+        }
+        
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert('Please enter a valid email address');
+          document.getElementById('userEmail').focus();
+          return;
+        }
+        
         // Create order on backend
         const response = await fetch('/api/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: 200 })
+          body: JSON.stringify({ amount: 200, email: email })
         });
         
         const order = await response.json();
@@ -144,7 +177,8 @@
                 body: JSON.stringify({
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature
+                  razorpay_signature: response.razorpay_signature,
+                  email: email
                 })
               });
               
@@ -152,7 +186,7 @@
               console.log('Verification result:', result);
               
               if (result.success) {
-                showSuccessScreen(result.licenseKey);
+                showSuccessScreen(result.licenseKey, email);
               } else {
                 console.error('Verification failed:', result.message);
                 alert('Payment verification failed: ' + (result.message || 'Unknown error'));
@@ -164,7 +198,7 @@
           },
           prefill: {
             name: '',
-            email: '',
+            email: email,
             contact: ''
           },
           theme: {
@@ -181,10 +215,11 @@
       }
     }
     
-    function showSuccessScreen(licenseKey) {
+    function showSuccessScreen(licenseKey, email) {
       document.getElementById('purchaseScreen').style.display = 'none';
       document.getElementById('successScreen').classList.add('active');
       document.getElementById('licenseKeyDisplay').textContent = licenseKey;
+      document.getElementById('userEmailDisplay').textContent = email;
     }
     
     function copyLicenseKey() {
