@@ -14,7 +14,7 @@ const licenseSchema = new mongoose.Schema({
   plan: {
     type: String,
     required: true,
-    enum: ['Trial', 'Student', 'Premium', 'Lifetime']
+    enum: ['Trial', 'Student', 'Premium', 'Lifetime', 'Monthly']
   },
   active: {
     type: Boolean,
