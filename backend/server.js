@@ -3,9 +3,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 const License = require('./models/License');
 
 const app = express();
+
+// Initialize Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 // Middleware
 app.use(cors());
@@ -229,6 +237,78 @@ app.post('/api/admin/delete-license', async (req, res) => {
     
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Payment: Create Razorpay order
+app.post('/api/create-order', async (req, res) => {
+  try {
+    const { amount } = req.body;
+    
+    const options = {
+      amount: amount * 100, // Convert to paise
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}`
+    };
+    
+    const order = await razorpay.orders.create(options);
+    
+    res.json({
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
+    
+  } catch (error) {
+    console.error('Order creation error:', error);
+    res.status(500).json({ message: 'Error creating order' });
+  }
+});
+
+// Payment: Verify payment and generate license
+app.post('/api/verify-payment', async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    
+    // Verify signature
+    const sign = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSign = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(sign.toString())
+      .digest('hex');
+    
+    if (razorpay_signature !== expectedSign) {
+      return res.status(400).json({ success: false, message: 'Invalid signature' });
+    }
+    
+    // Generate unique license key
+    const licenseKey = `QUIZ-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    
+    // Calculate expiry date (30 days from now)
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 30);
+    
+    // Create license in database
+    const license = new License({
+      licenseKey,
+      email: 'customer@payment.com', // You can collect email during payment
+      plan: 'Monthly',
+      expiryDate,
+      active: true
+    });
+    
+    await license.save();
+    
+    res.json({
+      success: true,
+      licenseKey,
+      expiryDate: expiryDate.toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Payment verification error:', error);
+    res.status(500).json({ success: false, message: 'Verification failed' });
   }
 });
 

@@ -16,69 +16,174 @@
     .pricing { background: #f5f5f5; padding: 30px; border-radius: 8px; margin: 30px 0; text-align: center; }
     .price { font-size: 48px; color: #4CAF50; font-weight: bold; margin: 20px 0; }
     .price-note { color: #666; font-size: 14px; }
-    .cta-button { display: inline-block; background: #4CAF50; color: white; padding: 15px 40px; border-radius: 6px; text-decoration: none; font-size: 18px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
+    .cta-button { display: inline-block; background: #4CAF50; color: white; padding: 15px 40px; border-radius: 6px; text-decoration: none; font-size: 18px; font-weight: bold; margin-top: 20px; transition: background 0.3s; cursor: pointer; border: none; }
     .cta-button:hover { background: #45a049; }
-    .contact { background: #e7f3ff; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center; }
-    .contact h3 { color: #333; margin-bottom: 10px; }
-    .contact p { color: #555; margin-bottom: 15px; }
-    .contact-info { color: #4CAF50; font-weight: bold; font-size: 18px; }
+    .success-screen { display: none; text-align: center; padding: 40px; }
+    .success-screen.active { display: block; }
+    .license-key { background: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0; font-size: 24px; font-weight: bold; color: #333; letter-spacing: 2px; }
+    .copy-button { background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+    .copy-button:hover { background: #0b7dda; }
+    .instructions { background: #fff3cd; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: left; }
+    .instructions h3 { color: #856404; margin-bottom: 10px; }
+    .instructions ol { margin-left: 20px; color: #856404; }
+    .instructions li { margin-bottom: 8px; }
   </style>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>🎓 Quiz Answer Assistant</h1>
-    <p class="subtitle">Get instant AI-powered answers to multiple-choice questions</p>
-    
-    <div class="features">
-      <h2 style="color: #333; margin-bottom: 20px;">Features:</h2>
-      <div class="feature">
-        <span class="feature-icon">✓</span>
-        <span class="feature-text">Instant answers to MCQ questions using advanced AI</span>
+    <!-- Purchase Screen -->
+    <div id="purchaseScreen">
+      <h1>🎓 Quiz Answer Assistant</h1>
+      <p class="subtitle">Get instant AI-powered answers to multiple-choice questions</p>
+      
+      <div class="features">
+        <h2 style="color: #333; margin-bottom: 20px;">Features:</h2>
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Instant answers to MCQ questions using advanced AI</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Works on any webpage - no tab switching required</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Answers appear for 3 seconds in top-right corner</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Dark/light mode support</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Secure license-based authentication</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Works on Chrome and Firefox</span>
+        </div>
       </div>
-      <div class="feature">
-        <span class="feature-icon">✓</span>
-        <span class="feature-text">Works on any webpage - no tab switching required</span>
+
+      <div class="pricing">
+        <h2 style="color: #333; margin-bottom: 10px;">Pricing</h2>
+        <div class="price">₹200/month</div>
+        <p class="price-note">Monthly subscription • Cancel anytime • Instant activation</p>
+        <button class="cta-button" onclick="initiatePayment()">Subscribe Now</button>
       </div>
-      <div class="feature">
-        <span class="feature-icon">✓</span>
-        <span class="feature-text">Answers appear for 3 seconds in top-right corner</span>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">✓</span>
-        <span class="feature-text">Dark/light mode support</span>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">✓</span>
-        <span class="feature-text">Secure license-based authentication</span>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">✓</span>
-        <span class="feature-text">Works on Chrome and Firefox</span>
+
+      <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
+        <p>Already have a license key? Install the extension and activate it!</p>
+        <p style="margin-top: 10px;">
+          <a href="https://chrome.google.com/webstore" target="_blank" style="color: #4CAF50;">Chrome Web Store</a> | 
+          <a href="https://addons.mozilla.org" target="_blank" style="color: #4CAF50;">Firefox Add-ons</a>
+        </p>
       </div>
     </div>
 
-    <div class="pricing">
-      <h2 style="color: #333; margin-bottom: 10px;">Pricing</h2>
-      <div class="price">$9.99</div>
-      <p class="price-note">One-time payment • Lifetime access • No subscription</p>
-    </div>
+    <!-- Success Screen -->
+    <div id="successScreen" class="success-screen">
+      <h1 style="color: #4CAF50; margin-bottom: 20px;">🎉 Payment Successful!</h1>
+      <p style="color: #666; margin-bottom: 20px;">Your license key has been generated</p>
+      
+      <div class="license-key" id="licenseKeyDisplay">Loading...</div>
+      <button class="copy-button" onclick="copyLicenseKey()">📋 Copy License Key</button>
+      
+      <div class="instructions">
+        <h3>📖 How to Activate:</h3>
+        <ol>
+          <li>Install the Quiz Answer Assistant extension from Chrome Web Store or Firefox Add-ons</li>
+          <li>Click the extension icon in your browser toolbar</li>
+          <li>Paste your license key in the input field</li>
+          <li>Click "Activate" button</li>
+          <li>Start using the extension by selecting any question text!</li>
+        </ol>
+      </div>
 
-    <div class="contact">
-      <h3>Get Your License Key</h3>
-      <p>Contact us to purchase a license key:</p>
-      <p class="contact-info">📧 Email: [your-email@example.com]</p>
-      <p style="color: #666; font-size: 14px; margin-top: 15px;">
-        We'll send you a license key within 24 hours of payment confirmation.
-      </p>
-    </div>
-
-    <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
-      <p>Already have a license key? Install the extension and activate it!</p>
-      <p style="margin-top: 10px;">
-        <a href="https://chrome.google.com/webstore" target="_blank" style="color: #4CAF50;">Chrome Web Store</a> | 
-        <a href="https://addons.mozilla.org" target="_blank" style="color: #4CAF50;">Firefox Add-ons</a>
-      </p>
+      <div style="text-align: center; margin-top: 30px;">
+        <p style="color: #666; margin-bottom: 10px;">Install the extension:</p>
+        <a href="https://chrome.google.com/webstore" target="_blank" class="cta-button" style="margin: 5px;">Chrome Web Store</a>
+        <a href="https://addons.mozilla.org" target="_blank" class="cta-button" style="margin: 5px;">Firefox Add-ons</a>
+      </div>
     </div>
   </div>
+
+  <script>
+    async function initiatePayment() {
+      try {
+        // Create order on backend
+        const response = await fetch('/api/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: 200 })
+        });
+        
+        const order = await response.json();
+        
+        if (!order.id) {
+          alert('Error creating order. Please try again.');
+          return;
+        }
+        
+        // Razorpay checkout
+        const options = {
+          key: order.razorpayKeyId,
+          amount: order.amount,
+          currency: 'INR',
+          name: 'Quiz Answer Assistant',
+          description: 'Monthly Subscription',
+          order_id: order.id,
+          handler: async function(response) {
+            // Verify payment and get license
+            const verifyResponse = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            
+            const result = await verifyResponse.json();
+            
+            if (result.success) {
+              showSuccessScreen(result.licenseKey);
+            } else {
+              alert('Payment verification failed. Please contact support.');
+            }
+          },
+          prefill: {
+            name: '',
+            email: '',
+            contact: ''
+          },
+          theme: {
+            color: '#4CAF50'
+          }
+        };
+        
+        const rzp = new Razorpay(options);
+        rzp.open();
+        
+      } catch (error) {
+        console.error('Payment error:', error);
+        alert('Error initiating payment. Please try again.');
+      }
+    }
+    
+    function showSuccessScreen(licenseKey) {
+      document.getElementById('purchaseScreen').style.display = 'none';
+      document.getElementById('successScreen').classList.add('active');
+      document.getElementById('licenseKeyDisplay').textContent = licenseKey;
+    }
+    
+    function copyLicenseKey() {
+      const licenseKey = document.getElementById('licenseKeyDisplay').textContent;
+      navigator.clipboard.writeText(licenseKey).then(() => {
+        alert('License key copied to clipboard!');
+      });
+    }
+  </script>
 </body>
 </html>
