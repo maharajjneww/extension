@@ -48,6 +48,25 @@
     button.logout:hover {
       background: #da190b;
     }
+    button.purchase {
+      background: #2196F3;
+      margin-top: 10px;
+    }
+    button.purchase:hover {
+      background: #0b7dda;
+    }
+    .link-text {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    .link-text a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+    .link-text a:hover {
+      text-decoration: underline;
+    }
     .status {
       margin-top: 10px;
       padding: 10px;
@@ -80,10 +99,13 @@
     <div class="info">Enter your license key to activate the extension</div>
     <input type="text" id="licenseKey" placeholder="Enter License Key">
     <button id="loginBtn">Activate</button>
+    <button class="purchase" onclick="window.open('https://extension-kiek.onrender.com/purchase', '_blank')">
+      💳 Get License Key
+    </button>
     <div class="status" id="loginStatus"></div>
-    <div style="text-align: center; margin-top: 15px;">
-      <a href="https://extension-kiek.onrender.com/purchase" target="_blank" style="color: #4CAF50; text-decoration: none; font-size: 13px;">
-        Don't have a license? Get one here →
+    <div class="link-text">
+      <a href="https://extension-kiek.onrender.com/forgot-license" target="_blank">
+        Forgot your license key?
       </a>
     </div>
   </div>
