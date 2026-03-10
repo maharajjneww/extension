@@ -248,7 +248,11 @@ app.post('/api/create-order', async (req, res) => {
     const options = {
       amount: amount * 100, // Convert to paise
       currency: 'INR',
-      receipt: `receipt_${Date.now()}`
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        product: 'Quiz Extension License',
+        plan: 'Monthly'
+      }
     };
     
     const order = await razorpay.orders.create(options);
@@ -271,6 +275,21 @@ app.post('/api/verify-payment', async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     
+    console.log('Payment verification request:', {
+      order_id: razorpay_order_id,
+      payment_id: razorpay_payment_id,
+      signature: razorpay_signature ? 'present' : 'missing'
+    });
+    
+    // Check if all required fields are present
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      console.error('Missing required fields');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing payment details' 
+      });
+    }
+    
     // Verify signature
     const sign = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSign = crypto
@@ -278,8 +297,18 @@ app.post('/api/verify-payment', async (req, res) => {
       .update(sign.toString())
       .digest('hex');
     
+    console.log('Signature verification:', {
+      received: razorpay_signature,
+      expected: expectedSign,
+      match: razorpay_signature === expectedSign
+    });
+    
     if (razorpay_signature !== expectedSign) {
-      return res.status(400).json({ success: false, message: 'Invalid signature' });
+      console.error('Signature mismatch');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid payment signature' 
+      });
     }
     
     // Generate unique license key
@@ -292,13 +321,15 @@ app.post('/api/verify-payment', async (req, res) => {
     // Create license in database
     const license = new License({
       licenseKey,
-      email: 'customer@payment.com', // You can collect email during payment
+      email: 'customer@payment.com',
       plan: 'Monthly',
       expiryDate,
       active: true
     });
     
     await license.save();
+    
+    console.log('License created successfully:', licenseKey);
     
     res.json({
       success: true,
@@ -308,7 +339,10 @@ app.post('/api/verify-payment', async (req, res) => {
     
   } catch (error) {
     console.error('Payment verification error:', error);
-    res.status(500).json({ success: false, message: 'Verification failed' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Verification failed: ' + error.message 
+    });
   }
 });
 
