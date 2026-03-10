@@ -68,7 +68,7 @@ app.get('/ping-status', (req, res) => {
 // Verify license endpoint (called by extension)
 app.post('/api/verify-license', async (req, res) => {
   try {
-    const { licenseKey } = req.body;
+    const { licenseKey, deviceId, deviceInfo } = req.body;
     
     if (!licenseKey) {
       return res.status(400).json({
@@ -106,6 +106,24 @@ app.post('/api/verify-license', async (req, res) => {
       }
     }
     
+    // Device binding check
+    if (deviceId) {
+      if (!license.deviceId) {
+        // First time activation - bind to this device
+        license.deviceId = deviceId;
+        license.deviceInfo = deviceInfo || 'Unknown';
+        license.activationCount = 1;
+        license.lastIp = req.ip || req.headers['x-forwarded-for'] || 'Unknown';
+        console.log(`License ${licenseKey} bound to device ${deviceId}`);
+      } else if (license.deviceId !== deviceId) {
+        // Different device trying to use the same license
+        return res.status(401).json({
+          valid: false,
+          message: 'This license is already activated on another device. Each license can only be used on one device.'
+        });
+      }
+    }
+    
     // Update last used timestamp
     license.lastUsed = new Date();
     await license.save();
@@ -115,7 +133,8 @@ app.post('/api/verify-license', async (req, res) => {
       valid: true,
       email: license.email,
       plan: license.plan,
-      expiryDate: license.expiryDate
+      expiryDate: license.expiryDate,
+      deviceBound: !!license.deviceId
     });
     
   } catch (error) {

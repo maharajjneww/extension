@@ -24,6 +24,22 @@ const licenseSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  deviceId: {
+    type: String,
+    default: null
+  },
+  deviceInfo: {
+    type: String,
+    default: null
+  },
+  lastIp: {
+    type: String,
+    default: null
+  },
+  activationCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

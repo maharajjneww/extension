@@ -7,14 +7,14 @@ const API_KEY = 'sk-9eaf00902e6d41ffb5b60f076a6e16ed';
 
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'verifyLicense') {
-    verifyLicenseWithServer(request.licenseKey)
+    verifyLicenseWithServer(request.licenseKey, request.deviceId, request.deviceInfo)
       .then(result => sendResponse(result))
       .catch(error => sendResponse({ valid: false, message: 'Server error' }));
     return true;
   }
   
   if (request.action === 'loginWithLicense') {
-    verifyLicenseWithServer(request.licenseKey)
+    verifyLicenseWithServer(request.licenseKey, request.deviceId, request.deviceInfo)
       .then(result => sendResponse(result))
       .catch(error => sendResponse({ valid: false, message: 'Connection error' }));
     return true;
@@ -34,7 +34,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-async function verifyLicenseWithServer(licenseKey) {
+async function verifyLicenseWithServer(licenseKey, deviceId, deviceInfo) {
   const API_URL = 'https://extension-kiek.onrender.com';
   
   try {
@@ -44,7 +44,11 @@ async function verifyLicenseWithServer(licenseKey) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ licenseKey })
+      body: JSON.stringify({ 
+        licenseKey,
+        deviceId,
+        deviceInfo
+      })
     });
     
     console.log('Background: Server response status:', response.status);

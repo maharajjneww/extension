@@ -6,6 +6,39 @@ if (typeof browser === 'undefined') {
 // Your backend API URL
 const API_URL = 'https://extension-kiek.onrender.com'; // Backend server URL
 
+// Generate unique device ID
+async function getDeviceId() {
+  let deviceId = await chrome.storage.local.get('deviceId');
+  
+  if (!deviceId.deviceId) {
+    // Generate new device ID based on browser fingerprint
+    const fingerprint = [
+      navigator.userAgent,
+      navigator.language,
+      new Date().getTimezoneOffset(),
+      screen.width + 'x' + screen.height,
+      navigator.hardwareConcurrency || 'unknown'
+    ].join('|');
+    
+    // Create hash of fingerprint
+    const encoder = new TextEncoder();
+    const data = encoder.encode(fingerprint);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    deviceId.deviceId = hashHex.substring(0, 32);
+    await chrome.storage.local.set({ deviceId: deviceId.deviceId });
+  }
+  
+  return deviceId.deviceId;
+}
+
+// Get device info
+function getDeviceInfo() {
+  return `${navigator.platform} - ${navigator.userAgent.substring(0, 50)}`;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const isLoggedIn = await checkLoginStatus();
   
@@ -34,11 +67,17 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     return;
   }
   
+  // Get device ID
+  const deviceId = await getDeviceId();
+  const deviceInfo = getDeviceInfo();
+  
   // Call backend API via background worker to verify license
   try {
     const result = await chrome.runtime.sendMessage({
       action: 'loginWithLicense',
-      licenseKey: licenseKey
+      licenseKey: licenseKey,
+      deviceId: deviceId,
+      deviceInfo: deviceInfo
     });
     
     if (result && result.valid) {

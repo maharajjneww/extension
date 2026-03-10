@@ -32,6 +32,10 @@ async function checkLogin() {
     return { valid: false, message: 'Please login first' };
   }
   
+  // Get device ID
+  let deviceData = await chrome.storage.local.get('deviceId');
+  const deviceId = deviceData.deviceId || null;
+  
   // Check if last verification was too long ago (60 minutes for testing)
   const now = Date.now();
   const lastVerified = data.lastVerified || 0;
@@ -42,7 +46,9 @@ async function checkLogin() {
     console.log('Checking license with server via background...');
     const result = await chrome.runtime.sendMessage({
       action: 'verifyLicense',
-      licenseKey: data.licenseKey
+      licenseKey: data.licenseKey,
+      deviceId: deviceId,
+      deviceInfo: navigator.userAgent.substring(0, 50)
     });
     
     console.log('Verification result:', result);
