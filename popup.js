@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     showLogin();
   }
+  
+  // Purchase button event listener
+  const purchaseBtn = document.getElementById('purchaseBtn');
+  if (purchaseBtn) {
+    purchaseBtn.addEventListener('click', () => {
+      window.open('https://extension-kiek.onrender.com/purchase', '_blank');
+    });
+  }
 });
 
 // Login button
