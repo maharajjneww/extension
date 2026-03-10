@@ -16,6 +16,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-panel.html'));
 });
 
+// Serve purchase page at /purchase
+app.get('/purchase', (req, res) => {
+  res.sendFile(path.join(__dirname, 'purchase.html'));
+});
+
 // Serve privacy policy at /privacy
 app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'privacy-policy.html'));
