@@ -7,7 +7,7 @@ let answerBox = null;
 let lastQuestion = '';
 let lastAnswer = '';
 
-// Create minimal floating answer box
+// Create minimal floating answer box with transparent background
 function createAnswerBox() {
   if (answerBox) return answerBox;
   
@@ -17,18 +17,20 @@ function createAnswerBox() {
     position: fixed;
     top: 10px;
     right: 10px;
-    background: black;
+    background: rgba(0, 0, 0, 0.85);
     color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 16px;
     z-index: 2147483647;
     display: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-    font-weight: 500;
+    font-weight: 600;
     width: auto;
     pointer-events: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   `;
   document.body.appendChild(answerBox);
   return answerBox;
@@ -147,9 +149,7 @@ document.addEventListener('mouseup', async () => {
       return;
     }
     
-    // Show loading indicator
-    showAnswer('...');
-    
+    // Don't show loading indicator - wait for answer
     // Get answer from background script
     console.log('Requesting answer for:', selectedText);
     try {
