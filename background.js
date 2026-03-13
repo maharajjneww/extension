@@ -28,7 +28,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
       .catch(error => {
         console.error('API call failed:', error);
-        sendResponse({ answer: 'API Error' });
+        sendResponse({ answer: null });
       });
     return true;
   }
@@ -81,15 +81,15 @@ async function getAnswerFromAPI(question) {
         messages: [
           {
             role: 'system',
-            content: 'You are a quiz assistant. For MCQ questions, respond ONLY with the correct option letter (A, B, C, or D) or the exact correct answer text. No explanations, no extra text.'
+            content: 'You are an MCQ quiz assistant. Read the following MCQ question and return ONLY the correct option number (1, 2, 3, or 4). Do not explain anything. Do not return full sentences. Return only the number.'
           },
           {
             role: 'user',
             content: question
           }
         ],
-        temperature: 0.3,
-        max_tokens: 50
+        temperature: 0.1,
+        max_tokens: 10
       })
     });
     
@@ -98,7 +98,7 @@ async function getAnswerFromAPI(question) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('API Error Response:', errorText);
-      return `Error ${response.status}`;
+      return null;
     }
     
     const data = await response.json();
@@ -106,6 +106,6 @@ async function getAnswerFromAPI(question) {
     return data.choices[0].message.content.trim();
   } catch (error) {
     console.error('Fetch error:', error);
-    return 'Network Error';
+    return null;
   }
 }

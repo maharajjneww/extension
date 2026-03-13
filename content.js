@@ -3,26 +3,50 @@ if (typeof browser === 'undefined') {
   var browser = chrome;
 }
 
-const API_KEY = 'sk-9eaf00902e6d41ffb5b60f076a6e16ed';
-const API_URL = 'https://extension-kiek.onrender.com'; // Backend server URL
-let answerPopup = null;
+let answerBox = null;
+let lastQuestion = '';
+let lastAnswer = '';
 
-document.addEventListener('mouseup', async () => {
-  const selectedText = window.getSelection().toString().trim();
+// Create minimal floating answer box
+function createAnswerBox() {
+  if (answerBox) return answerBox;
   
-  if (selectedText.length > 10) {
-    // Check if user is logged in and license is valid with server
-    const loginStatus = await checkLogin();
-    if (!loginStatus.valid) {
-      showAnswer(loginStatus.message);
-      return;
-    }
-    
-    showAnswer('Loading...');
-    const answer = await getAnswer(selectedText);
-    showAnswer(answer);
+  answerBox = document.createElement('div');
+  answerBox.id = 'quiz-answer-box';
+  answerBox.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: black;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 2147483647;
+    display: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-weight: 500;
+    width: auto;
+    pointer-events: none;
+  `;
+  document.body.appendChild(answerBox);
+  return answerBox;
+}
+
+function showAnswer(text) {
+  const box = createAnswerBox();
+  box.textContent = text;
+  box.style.display = 'block';
+  lastAnswer = text;
+}
+
+function hideAnswer() {
+  if (answerBox) {
+    answerBox.style.display = 'none';
+    lastAnswer = '';
   }
-});
+}
 
 async function checkLogin() {
   const data = await chrome.storage.sync.get(['isLoggedIn', 'licenseKey', 'lastVerified']);
@@ -36,12 +60,19 @@ async function checkLogin() {
   let deviceData = await chrome.storage.local.get('deviceId');
   const deviceId = deviceData.deviceId || null;
   
-  // Check if last verification was too long ago (60 minutes for testing)
+  // Check if last verification was recent (15 minutes)
   const now = Date.now();
   const lastVerified = data.lastVerified || 0;
   const minutesSinceVerification = (now - lastVerified) / (1000 * 60);
   
-  // Verify with server every time via background script
+  // Only verify with server if more than 15 minutes since last check
+  // This reduces network calls during exam/active use
+  if (minutesSinceVerification < 15) {
+    console.log(`License verified recently (${minutesSinceVerification.toFixed(1)} min ago), skipping server check`);
+    return { valid: true };
+  }
+  
+  // Verify with server via background script
   try {
     console.log('Checking license with server via background...');
     const result = await chrome.runtime.sendMessage({
@@ -81,75 +112,62 @@ async function checkLogin() {
   }
 }
 
-document.addEventListener('click', () => {
-  hideAnswer();
+// Monitor selection changes - hide answer when text is deselected
+document.addEventListener('selectionchange', () => {
+  const selectedText = window.getSelection().toString().trim();
+  
+  // If no text selected and answer is showing, hide it
+  if (selectedText.length === 0 && lastAnswer) {
+    hideAnswer();
+    lastQuestion = '';
+  }
 });
 
-async function getAnswer(question) {
-  try {
-    console.log('Making API request...');
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a quiz assistant. For MCQ questions, respond ONLY with the correct option letter (A, B, C, or D) or the exact correct answer text. No explanations, no extra text.'
-          },
-          {
-            role: 'user',
-            content: question
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 50
-      })
-    });
-    
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error:', response.status, errorText);
-      return `Error ${response.status}`;
+// Handle text selection
+document.addEventListener('mouseup', async () => {
+  const selectedText = window.getSelection().toString().trim();
+  
+  // Only trigger if text is selected
+  if (selectedText.length > 0) {
+    // Check if same question - avoid duplicate API calls
+    if (selectedText === lastQuestion) {
+      // Show cached answer if available
+      if (lastAnswer) {
+        showAnswer(lastAnswer);
+      }
+      return;
     }
     
-    const data = await response.json();
-    console.log('API Response:', data);
-    return data.choices[0].message.content.trim();
-  } catch (error) {
-    console.error('Fetch error:', error.message);
+    lastQuestion = selectedText;
     
-    // Check if it's a CORS error
-    if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-      return 'CORS Error - Check console';
+    // Check login status
+    const loginStatus = await checkLogin();
+    if (!loginStatus.valid) {
+      showAnswer('⚠️ Login required');
+      return;
     }
     
-    return 'Network Error';
+    // Show loading indicator
+    showAnswer('...');
+    
+    // Get answer from background script
+    console.log('Requesting answer for:', selectedText);
+    try {
+      const response = await chrome.runtime.sendMessage({
+        action: 'getAnswer',
+        question: selectedText
+      });
+      
+      console.log('Received response:', response);
+      
+      if (response && response.answer) {
+        showAnswer(response.answer);
+      } else {
+        hideAnswer();
+      }
+    } catch (error) {
+      console.error('Error getting answer:', error);
+      hideAnswer();
+    }
   }
-}
-
-function showAnswer(text) {
-  hideAnswer();
-  
-  answerPopup = document.createElement('div');
-  answerPopup.id = 'quiz-assistant-popup';
-  answerPopup.textContent = text;
-  document.body.appendChild(answerPopup);
-  
-  setTimeout(() => {
-    hideAnswer();
-  }, 3000);
-}
-
-function hideAnswer() {
-  if (answerPopup && answerPopup.parentNode) {
-    answerPopup.parentNode.removeChild(answerPopup);
-    answerPopup = null;
-  }
-}
+});
