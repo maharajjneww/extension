@@ -81,15 +81,16 @@ async function getAnswerFromAPI(question) {
         messages: [
           {
             role: 'system',
-            content: 'You are an MCQ quiz assistant. Read the following MCQ question and return ONLY the correct option number (1, 2, 3, or 4). Do not explain anything. Do not return full sentences. Return only the number.'
+            content: 'You are an expert at solving multiple choice questions across all domains including mathematics, probability, aptitude, reasoning, technical subjects, and general knowledge. Analyze each question carefully and determine the correct answer.'
           },
           {
             role: 'user',
-            content: question
+            content: `Question: ${question}\n\nInstructions: Read this MCQ question carefully. Identify the correct answer option. Return ONLY the option identifier (A, B, C, D or 1, 2, 3, 4) - nothing else. No explanation, no punctuation, just the single letter or number.`
           }
         ],
-        temperature: 0.1,
-        max_tokens: 10
+        temperature: 0.2,
+        max_tokens: 10,
+        top_p: 0.95
       })
     });
     
@@ -103,7 +104,21 @@ async function getAnswerFromAPI(question) {
     
     const data = await response.json();
     console.log('API Response data:', data);
-    return data.choices[0].message.content.trim();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid API response structure');
+      return null;
+    }
+    
+    const answer = data.choices[0].message.content.trim();
+    console.log('Raw answer from API:', answer);
+    
+    // Extract only the first letter or number
+    const match = answer.match(/[A-D1-4]/i);
+    const cleanAnswer = match ? match[0].toUpperCase() : answer.charAt(0).toUpperCase();
+    
+    console.log('Clean answer:', cleanAnswer);
+    return cleanAnswer;
   } catch (error) {
     console.error('Fetch error:', error);
     return null;

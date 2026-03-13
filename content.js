@@ -213,16 +213,20 @@ document.addEventListener('mouseup', async () => {
   
   // Only trigger if text is selected
   if (selectedText.length > 0) {
+    console.log('Selected text:', selectedText);
+    console.log('Last question:', lastQuestion);
+    console.log('Last answer:', lastAnswer);
+    
     // Check if same question - avoid duplicate API calls
-    if (selectedText === lastQuestion) {
-      // Show cached answer if available
-      if (lastAnswer) {
-        showAnswer(lastAnswer);
-      }
+    if (selectedText === lastQuestion && lastAnswer) {
+      console.log('Using cached answer:', lastAnswer);
+      showAnswer(lastAnswer);
       return;
     }
     
+    // New question - clear cache and get fresh answer
     lastQuestion = selectedText;
+    lastAnswer = '';
     
     // Check login status
     const loginStatus = await checkLogin();
@@ -231,9 +235,8 @@ document.addEventListener('mouseup', async () => {
       return;
     }
     
-    // Don't show loading indicator - wait for answer
     // Get answer from background script
-    console.log('Requesting answer for:', selectedText);
+    console.log('Requesting NEW answer for:', selectedText);
     try {
       const response = await chrome.runtime.sendMessage({
         action: 'getAnswer',
@@ -243,8 +246,10 @@ document.addEventListener('mouseup', async () => {
       console.log('Received response:', response);
       
       if (response && response.answer) {
+        lastAnswer = response.answer;
         showAnswer(response.answer);
       } else {
+        console.error('No answer received');
         hideAnswer();
       }
     } catch (error) {
