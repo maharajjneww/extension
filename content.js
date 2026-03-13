@@ -6,6 +6,8 @@ if (typeof browser === 'undefined') {
 let answerBox = null;
 let lastQuestion = '';
 let lastAnswer = '';
+let extensionPaused = false;
+let keySequence = '';
 
 // Create minimal floating answer box with transparent background
 function createAnswerBox() {
@@ -125,8 +127,88 @@ document.addEventListener('selectionchange', () => {
   }
 });
 
+// Keyboard shortcut listener for pause/resume
+document.addEventListener('keydown', (e) => {
+  // Build key sequence
+  keySequence += e.key;
+  
+  // Keep only last 2 characters
+  if (keySequence.length > 2) {
+    keySequence = keySequence.slice(-2);
+  }
+  
+  // Check for pause code: 45
+  if (keySequence === '45') {
+    extensionPaused = true;
+    keySequence = '';
+    console.log('Extension PAUSED');
+    
+    // Show pause notification
+    const pauseNotif = document.createElement('div');
+    pauseNotif.textContent = '⏸ Extension Paused';
+    pauseNotif.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.9);
+      color: white;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-size: 18px;
+      z-index: 2147483647;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(pauseNotif);
+    setTimeout(() => pauseNotif.remove(), 1500);
+    
+    hideAnswer();
+  }
+  
+  // Check for resume code: 54
+  if (keySequence === '54') {
+    extensionPaused = false;
+    keySequence = '';
+    console.log('Extension RESUMED');
+    
+    // Show resume notification
+    const resumeNotif = document.createElement('div');
+    resumeNotif.textContent = '▶ Extension Resumed';
+    resumeNotif.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 255, 0, 0.9);
+      color: white;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-size: 18px;
+      z-index: 2147483647;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(resumeNotif);
+    setTimeout(() => resumeNotif.remove(), 1500);
+  }
+  
+  // Reset sequence after 2 seconds of inactivity
+  setTimeout(() => {
+    keySequence = '';
+  }, 2000);
+});
+
 // Handle text selection
 document.addEventListener('mouseup', async () => {
+  // Check if extension is paused
+  if (extensionPaused) {
+    console.log('Extension is paused, ignoring selection');
+    return;
+  }
+  
   const selectedText = window.getSelection().toString().trim();
   
   // Only trigger if text is selected
