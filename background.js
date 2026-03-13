@@ -81,16 +81,25 @@ async function getAnswerFromAPI(question) {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at solving multiple choice questions across all domains including mathematics, probability, aptitude, reasoning, technical subjects, and general knowledge. Analyze each question carefully and determine the correct answer.'
+            content: `You are a highly intelligent AI assistant with expertise across all fields of knowledge. Your task is to solve multiple choice questions accurately.
+
+When given a question:
+1. Read and understand it completely
+2. Think through the problem carefully
+3. Evaluate all given options
+4. Determine the correct answer
+5. Return ONLY the option identifier
+
+Response format: Return EXACTLY one character - either A, B, C, D (for letter options) or 1, 2, 3, 4 (for numbered options). Nothing else.`
           },
           {
             role: 'user',
-            content: `Question: ${question}\n\nInstructions: Read this MCQ question carefully. Identify the correct answer option. Return ONLY the option identifier (A, B, C, D or 1, 2, 3, 4) - nothing else. No explanation, no punctuation, just the single letter or number.`
+            content: `${question}\n\nProvide only the correct option (A/B/C/D or 1/2/3/4):`
           }
         ],
-        temperature: 0.2,
-        max_tokens: 10,
-        top_p: 0.95
+        temperature: 0.3,
+        max_tokens: 15,
+        top_p: 0.9
       })
     });
     
@@ -103,22 +112,34 @@ async function getAnswerFromAPI(question) {
     }
     
     const data = await response.json();
-    console.log('API Response data:', data);
+    console.log('Full API Response:', JSON.stringify(data, null, 2));
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       console.error('Invalid API response structure');
       return null;
     }
     
-    const answer = data.choices[0].message.content.trim();
-    console.log('Raw answer from API:', answer);
+    const rawAnswer = data.choices[0].message.content.trim();
+    console.log('Raw answer from API:', rawAnswer);
     
-    // Extract only the first letter or number
-    const match = answer.match(/[A-D1-4]/i);
-    const cleanAnswer = match ? match[0].toUpperCase() : answer.charAt(0).toUpperCase();
+    // Extract the first valid option character (A-D or 1-4)
+    const match = rawAnswer.match(/^[A-D1-4]/i);
+    if (match) {
+      const cleanAnswer = match[0].toUpperCase();
+      console.log('Extracted answer:', cleanAnswer);
+      return cleanAnswer;
+    }
     
-    console.log('Clean answer:', cleanAnswer);
-    return cleanAnswer;
+    // Fallback: try to find any A-D or 1-4 in the response
+    const fallbackMatch = rawAnswer.match(/[A-D1-4]/i);
+    if (fallbackMatch) {
+      const cleanAnswer = fallbackMatch[0].toUpperCase();
+      console.log('Fallback extracted answer:', cleanAnswer);
+      return cleanAnswer;
+    }
+    
+    console.error('Could not extract valid answer from:', rawAnswer);
+    return null;
   } catch (error) {
     console.error('Fetch error:', error);
     return null;
