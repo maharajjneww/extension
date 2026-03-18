@@ -8,6 +8,7 @@ let lastQuestion = '';
 let lastAnswer = '';
 let extensionPaused = false;
 let keySequence = '';
+let hideTimer = null;
 
 // Create minimal floating answer box with transparent background
 function createAnswerBox() {
@@ -43,12 +44,28 @@ function showAnswer(text) {
   box.textContent = text;
   box.style.display = 'block';
   lastAnswer = text;
+  
+  // Clear any existing timer
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+  }
+  
+  // Auto-hide after 5 seconds
+  hideTimer = setTimeout(() => {
+    hideAnswer();
+  }, 5000);
 }
 
 function hideAnswer() {
   if (answerBox) {
     answerBox.style.display = 'none';
     lastAnswer = '';
+  }
+  
+  // Clear timer
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
   }
 }
 
@@ -127,6 +144,13 @@ document.addEventListener('selectionchange', () => {
   }
 });
 
+// Click anywhere to hide answer
+document.addEventListener('click', () => {
+  if (answerBox && answerBox.style.display === 'block') {
+    hideAnswer();
+  }
+});
+
 // Keyboard shortcut listener for pause/resume
 document.addEventListener('keydown', (e) => {
   // Build key sequence
@@ -143,26 +167,27 @@ document.addEventListener('keydown', (e) => {
     keySequence = '';
     console.log('Extension PAUSED');
     
-    // Show pause notification
+    // Show small pause notification in right corner
     const pauseNotif = document.createElement('div');
-    pauseNotif.textContent = '⏸ Extension Paused';
+    pauseNotif.textContent = '⏸';
     pauseNotif.style.cssText = `
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255, 0, 0, 0.9);
-      color: white;
-      padding: 15px 30px;
-      border-radius: 8px;
-      font-size: 18px;
+      top: 10px;
+      right: 50px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #ff4444;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
       z-index: 2147483647;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 68, 68, 0.3);
     `;
     document.body.appendChild(pauseNotif);
-    setTimeout(() => pauseNotif.remove(), 1500);
+    setTimeout(() => pauseNotif.remove(), 2000);
     
     hideAnswer();
   }
@@ -173,26 +198,27 @@ document.addEventListener('keydown', (e) => {
     keySequence = '';
     console.log('Extension RESUMED');
     
-    // Show resume notification
+    // Show small resume notification in right corner
     const resumeNotif = document.createElement('div');
-    resumeNotif.textContent = '▶ Extension Resumed';
+    resumeNotif.textContent = '▶';
     resumeNotif.style.cssText = `
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 255, 0, 0.9);
-      color: white;
-      padding: 15px 30px;
-      border-radius: 8px;
-      font-size: 18px;
+      top: 10px;
+      right: 50px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #44ff44;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
       z-index: 2147483647;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(68, 255, 68, 0.3);
     `;
     document.body.appendChild(resumeNotif);
-    setTimeout(() => resumeNotif.remove(), 1500);
+    setTimeout(() => resumeNotif.remove(), 2000);
   }
   
   // Reset sequence after 2 seconds of inactivity

@@ -81,24 +81,32 @@ async function getAnswerFromAPI(question) {
         messages: [
           {
             role: 'system',
-            content: `You are a highly intelligent AI assistant with expertise across all fields of knowledge. Your task is to solve multiple choice questions accurately.
+            content: `You are an expert problem solver specializing in competitive exams, aptitude tests, and technical assessments. You excel at:
+- Mathematical reasoning and calculations
+- Logical and analytical thinking
+- Pattern recognition and series completion
+- Probability and statistics
+- Programming and computer science concepts
+- General knowledge and current affairs
 
-When given a question:
-1. Read and understand it completely
-2. Think through the problem carefully
-3. Evaluate all given options
-4. Determine the correct answer
-5. Return ONLY the option identifier
+IMPORTANT INSTRUCTIONS:
+1. Analyze the question carefully to determine if it has multiple choice options (A, B, C, D) or not
+2. If the question HAS options (A, B, C, D): Return ONLY the correct option letter (A, B, C, or D)
+3. If the question has NO options: Return the direct answer value (like "7.5°", "243", "ReLU", etc.)
+4. Your response must be concise - either a single letter OR the direct answer
+5. No explanations, no extra text, no reasoning shown
 
-Response format: Return EXACTLY one character - either A, B, C, D (for letter options) or 1, 2, 3, 4 (for numbered options). Nothing else.`
+Examples:
+- Question with options A, B, C, D → Answer: B
+- Question without options → Answer: 7.5°`
           },
           {
             role: 'user',
-            content: `${question}\n\nProvide only the correct option (A/B/C/D or 1/2/3/4):`
+            content: `Analyze this question and provide the answer according to the format rules:\n\n${question}\n\nAnswer:`
           }
         ],
         temperature: 0.3,
-        max_tokens: 15,
+        max_tokens: 20,
         top_p: 0.9
       })
     });
@@ -122,24 +130,14 @@ Response format: Return EXACTLY one character - either A, B, C, D (for letter op
     const rawAnswer = data.choices[0].message.content.trim();
     console.log('Raw answer from API:', rawAnswer);
     
-    // Extract the first valid option character (A-D or 1-4)
-    const match = rawAnswer.match(/^[A-D1-4]/i);
-    if (match) {
-      const cleanAnswer = match[0].toUpperCase();
-      console.log('Extracted answer:', cleanAnswer);
-      return cleanAnswer;
-    }
+    // Clean up the answer - remove common prefixes
+    let cleanAnswer = rawAnswer
+      .replace(/^(Answer:|The answer is:?|Correct answer:?)\s*/i, '')
+      .replace(/^[.\-\s]+/, '')
+      .trim();
     
-    // Fallback: try to find any A-D or 1-4 in the response
-    const fallbackMatch = rawAnswer.match(/[A-D1-4]/i);
-    if (fallbackMatch) {
-      const cleanAnswer = fallbackMatch[0].toUpperCase();
-      console.log('Fallback extracted answer:', cleanAnswer);
-      return cleanAnswer;
-    }
-    
-    console.error('Could not extract valid answer from:', rawAnswer);
-    return null;
+    console.log('Cleaned answer:', cleanAnswer);
+    return cleanAnswer;
   } catch (error) {
     console.error('Fetch error:', error);
     return null;
