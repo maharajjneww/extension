@@ -3,33 +3,31 @@ if (typeof browser === 'undefined') {
   var browser = chrome;
 }
 
-// Encoded API key to avoid detection
-const API_PARTS = ['sk-777e8e2162c548bb', 'a9c7910198e42759'];
-const API_KEY = API_PARTS.join('');
+const API_URL = 'https://extension-kiek.onrender.com';
 
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'verifyLicense') {
     verifyLicenseWithServer(request.licenseKey, request.deviceId, request.deviceInfo)
       .then(result => sendResponse(result))
-      .catch(error => sendResponse({ valid: false, message: 'Server error' }));
+      .catch(() => sendResponse({ valid: false, message: 'Server error' }));
     return true;
   }
   
   if (request.action === 'loginWithLicense') {
     verifyLicenseWithServer(request.licenseKey, request.deviceId, request.deviceInfo)
       .then(result => sendResponse(result))
-      .catch(error => sendResponse({ valid: false, message: 'Connection error' }));
+      .catch(() => sendResponse({ valid: false, message: 'Connection error' }));
     return true;
   }
   
   if (request.action === 'getAnswer') {
-    getAnswerFromAPI(request.question)
+    getAnswerFromBackend(request.question, request.licenseKey)
       .then(answer => {
         console.log('Sending answer:', answer);
         sendResponse({ answer: answer });
       })
-      .catch(error => {
-        console.error('API call failed:', error);
+      .catch(() => {
+        console.error('API call failed');
         sendResponse({ answer: null });
       });
     return true;
@@ -37,8 +35,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function verifyLicenseWithServer(licenseKey, deviceId, deviceInfo) {
-  const API_URL = 'https://extension-kiek.onrender.com';
-  
   try {
     console.log('Background: Verifying license with server...');
     const response = await fetch(`${API_URL}/api/verify-license`, {
@@ -68,80 +64,41 @@ async function verifyLicenseWithServer(licenseKey, deviceId, deviceInfo) {
   }
 }
 
-async function getAnswerFromAPI(question) {
-  console.log('Calling API with question:', question);
+async function getAnswerFromBackend(question, licenseKey) {
+  console.log('Calling backend proxy with question:', question);
   
   try {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch(`${API_URL}/api/get-answer`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert problem solver specializing in competitive exams, aptitude tests, and technical assessments. You excel at:
-- Mathematical reasoning and calculations
-- Logical and analytical thinking
-- Pattern recognition and series completion
-- Probability and statistics
-- Programming and computer science concepts
-- General knowledge and current affairs
-
-IMPORTANT INSTRUCTIONS:
-1. Analyze the question carefully to determine if it has multiple choice options (A, B, C, D) or not
-2. If the question HAS options (A, B, C, D): Return ONLY the correct option letter (A, B, C, or D)
-3. If the question has NO options: Return the direct answer value (like "7.5°", "243", "ReLU", etc.)
-4. Your response must be concise - either a single letter OR the direct answer
-5. No explanations, no extra text, no reasoning shown
-
-Examples:
-- Question with options A, B, C, D → Answer: B
-- Question without options → Answer: 7.5°`
-          },
-          {
-            role: 'user',
-            content: `Analyze this question and provide the answer according to the format rules:\n\n${question}\n\nAnswer:`
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 20,
-        top_p: 0.9
+        question: question,
+        licenseKey: licenseKey
       })
     });
     
-    console.log('API Response status:', response.status);
+    console.log('Backend Response status:', response.status);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error Response:', errorText);
+      const errorData = await response.json();
+      console.error('Backend Error:', errorData.message);
       return null;
     }
     
     const data = await response.json();
-    console.log('Full API Response:', JSON.stringify(data, null, 2));
+    console.log('Backend Response:', data);
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid API response structure');
+    if (!data.success || !data.answer) {
+      console.error('Invalid backend response');
       return null;
     }
     
-    const rawAnswer = data.choices[0].message.content.trim();
-    console.log('Raw answer from API:', rawAnswer);
-    
-    // Clean up the answer - remove common prefixes
-    let cleanAnswer = rawAnswer
-      .replace(/^(Answer:|The answer is:?|Correct answer:?)\s*/i, '')
-      .replace(/^[.\-\s]+/, '')
-      .trim();
-    
-    console.log('Cleaned answer:', cleanAnswer);
-    return cleanAnswer;
+    console.log('Answer from backend:', data.answer);
+    return data.answer;
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error('Backend fetch error:', error);
     return null;
   }
 }

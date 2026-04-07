@@ -261,12 +261,16 @@ document.addEventListener('mouseup', async () => {
       return;
     }
     
+    // Get license key for API call
+    const data = await chrome.storage.sync.get(['licenseKey']);
+    
     // Get answer from background script
     console.log('Requesting NEW answer for:', selectedText);
     try {
       const response = await chrome.runtime.sendMessage({
         action: 'getAnswer',
-        question: selectedText
+        question: selectedText,
+        licenseKey: data.licenseKey
       });
       
       console.log('Received response:', response);

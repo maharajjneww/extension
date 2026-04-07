@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Quiz Answer Assistant",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "description": "Get quick answers for quiz questions with text selection",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
-    "https://api.deepseek.com/*"
+    "https://extension-kiek.onrender.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

@@ -424,6 +424,129 @@ app.post('/api/retrieve-license', async (req, res) => {
   }
 });
 
+// AI Proxy: Get answer from DeepSeek API (hides API key from extension)
+app.post('/api/get-answer', async (req, res) => {
+  try {
+    const { question, licenseKey } = req.body;
+    
+    if (!question) {
+      return res.status(400).json({
+        success: false,
+        message: 'Question is required'
+      });
+    }
+    
+    // Verify license before processing
+    if (!licenseKey) {
+      return res.status(401).json({
+        success: false,
+        message: 'License key required'
+      });
+    }
+    
+    const license = await License.findOne({ licenseKey, active: true });
+    
+    if (!license) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or inactive license'
+      });
+    }
+    
+    // Check if expired
+    if (license.expiryDate && new Date() > license.expiryDate) {
+      return res.status(401).json({
+        success: false,
+        message: 'License expired'
+      });
+    }
+    
+    console.log('Processing question for license:', licenseKey);
+    
+    // Call DeepSeek API from server (API key stays secure)
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert problem solver specializing in competitive exams, aptitude tests, and technical assessments. You excel at:
+- Mathematical reasoning and calculations
+- Logical and analytical thinking
+- Pattern recognition and series completion
+- Probability and statistics
+- Programming and computer science concepts
+- General knowledge and current affairs
+
+IMPORTANT INSTRUCTIONS:
+1. Analyze the question carefully to determine if it has multiple choice options (A, B, C, D) or not
+2. If the question HAS options (A, B, C, D): Return ONLY the correct option letter (A, B, C, or D)
+3. If the question has NO options: Return the direct answer value (like "7.5°", "243", "ReLU", etc.)
+4. Your response must be concise - either a single letter OR the direct answer
+5. No explanations, no extra text, no reasoning shown
+
+Examples:
+- Question with options A, B, C, D → Answer: B
+- Question without options → Answer: 7.5°`
+          },
+          {
+            role: 'user',
+            content: `Analyze this question and provide the answer according to the format rules:\n\n${question}\n\nAnswer:`
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 20,
+        top_p: 0.9
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('DeepSeek API Error:', errorText);
+      return res.status(500).json({
+        success: false,
+        message: 'AI service error'
+      });
+    }
+    
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      return res.status(500).json({
+        success: false,
+        message: 'Invalid AI response'
+      });
+    }
+    
+    const rawAnswer = data.choices[0].message.content.trim();
+    
+    // Clean up the answer
+    const cleanAnswer = rawAnswer
+      .replace(/^(Answer:|The answer is:?|Correct answer:?)\s*/i, '')
+      .replace(/^[.\-\s]+/, '')
+      .trim();
+    
+    console.log('Answer generated:', cleanAnswer);
+    
+    res.json({
+      success: true,
+      answer: cleanAnswer
+    });
+    
+  } catch (error) {
+    console.error('Get answer error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error: ' + error.message
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
