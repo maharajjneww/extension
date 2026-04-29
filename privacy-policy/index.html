@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - Quiz Answer Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+    
+    .last-updated {
+      color: #7f8c8d;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    
+    h2 {
+      color: #34495e;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 24px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+    }
+    
+    h3 {
+      color: #34495e;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    
+    p {
+      margin-bottom: 15px;
+      color: #555;
+    }
+    
+    ul {
+      margin: 15px 0;
+      padding-left: 30px;
+    }
+    
+    li {
+      margin-bottom: 10px;
+      color: #555;
+    }
+    
+    strong {
+      color: #2c3e50;
+    }
+    
+    .highlight {
+      background: #e8f4f8;
+      padding: 15px;
+      border-left: 4px solid #3498db;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .contact-info {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 6px;
+      margin-top: 30px;
+    }
+    
+    a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      h2 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Privacy Policy</h1>
+    <p class="last-updated"><strong>Last Updated:</strong> April 29, 2026</p>
+    
+    <div class="highlight">
+      <p><strong>Quiz Answer Assistant</strong> ("the Extension", "we", "us", or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our browser extension.</p>
+    </div>
+
+    <h2>1. Information We Collect</h2>
+    
+    <h3>1.1 License Key and Authentication Data</h3>
+    <ul>
+      <li><strong>License Key:</strong> We collect and store your license key to authenticate and authorize access to the Extension</li>
+      <li><strong>Device Fingerprint:</strong> A unique device identifier (SHA-256 hash) is generated to prevent license sharing</li>
+      <li><strong>Device Information:</strong> Browser type, platform, and basic system information</li>
+      <li><strong>Storage:</strong> License keys are stored locally in your browser using Chrome/Firefox storage API</li>
+      <li><strong>Transmission:</strong> License keys are transmitted to our backend server (extension-kiek.onrender.com) for verification</li>
+    </ul>
+
+    <h3>1.2 Email Address</h3>
+    <ul>
+      <li>Collected during purchase for license recovery purposes</li>
+      <li>Stored in our database associated with your license key</li>
+      <li>Used only for license retrieval and account management</li>
+      <li>Not shared with third parties</li>
+    </ul>
+
+    <h3>1.3 Usage Data</h3>
+    <ul>
+      <li>Last verification timestamp (to manage offline grace period)</li>
+      <li>Last used date (for license activity tracking)</li>
+      <li>IP address (logged for security purposes)</li>
+      <li>Activation count (to detect suspicious activity)</li>
+    </ul>
+
+    <h3>1.4 Questions and Answers</h3>
+    <ul>
+      <li>Selected question text is sent to our backend server for processing</li>
+      <li>Our server forwards questions to DeepSeek AI API for answer generation</li>
+      <li><strong>We do NOT store or log the questions you submit</strong></li>
+      <li><strong>We do NOT store or log the answers provided</strong></li>
+      <li>Questions are processed in real-time and immediately discarded</li>
+    </ul>
+
+    <h3>1.5 Payment Information</h3>
+    <ul>
+      <li>Payment processing is handled entirely by Razorpay</li>
+      <li>We do NOT collect or store credit card information</li>
+      <li>We receive only payment confirmation and order IDs from Razorpay</li>
+      <li>Email address is collected before payment for license delivery</li>
+    </ul>
+
+    <h2>2. How We Use Your Information</h2>
+    
+    <ul>
+      <li><strong>Authentication:</strong> To verify your license key and grant access to the Extension</li>
+      <li><strong>Service Delivery:</strong> To process questions and provide AI-generated answers</li>
+      <li><strong>Security:</strong> To prevent unauthorized access, license abuse, and fraud</li>
+      <li><strong>Device Binding:</strong> To enforce one-license-per-device policy</li>
+      <li><strong>License Recovery:</strong> To allow users to retrieve lost license keys via email</li>
+      <li><strong>Support:</strong> To respond to user inquiries and provide customer support</li>
+      <li><strong>Compliance:</strong> To comply with legal obligations and enforce our terms</li>
+    </ul>
+
+    <h2>3. Data Storage and Security</h2>
+    
+    <h3>3.1 Local Storage</h3>
+    <ul>
+      <li>License keys stored locally in browser using encrypted storage API</li>
+      <li>Device fingerprint stored locally</li>
+      <li>Last verification timestamp cached locally</li>
+    </ul>
+
+    <h3>3.2 Server Storage</h3>
+    <ul>
+      <li>License data stored in MongoDB Atlas (cloud database)</li>
+      <li>Database hosted in secure data centers with encryption at rest</li>
+      <li>Access restricted to authorized personnel only</li>
+    </ul>
+
+    <h3>3.3 Security Measures</h3>
+    <ul>
+      <li>All communications use HTTPS/TLS encryption</li>
+      <li>API keys and secrets stored in environment variables</li>
+      <li>Device fingerprints use SHA-256 cryptographic hashing</li>
+      <li>Payment processing secured by Razorpay (PCI DSS compliant)</li>
+      <li>Regular security audits and updates</li>
+    </ul>
+
+    <h2>4. Third-Party Services</h2>
+    
+    <h3>4.1 DeepSeek AI</h3>
+    <ul>
+      <li><strong>Purpose:</strong> AI-powered answer generation</li>
+      <li><strong>Data Shared:</strong> Question text only (no personal information)</li>
+      <li><strong>Privacy Policy:</strong> <a href="https://www.deepseek.com/privacy-policy" target="_blank">https://www.deepseek.com/privacy-policy</a></li>
+      <li><strong>Note:</strong> Questions are sent via our backend server, not directly from your browser</li>
+    </ul>
+
+    <h3>4.2 Razorpay (Payment Processing)</h3>
+    <ul>
+      <li><strong>Purpose:</strong> Secure payment processing</li>
+      <li><strong>Data Shared:</strong> Payment information, email address</li>
+      <li><strong>Privacy Policy:</strong> <a href="https://razorpay.com/privacy/" target="_blank">https://razorpay.com/privacy/</a></li>
+      <li><strong>Compliance:</strong> PCI DSS Level 1 certified</li>
+    </ul>
+
+    <h3>4.3 Render.com (Hosting)</h3>
+    <ul>
+      <li><strong>Purpose:</strong> Backend server hosting</li>
+      <li><strong>Data Stored:</strong> License database, server logs</li>
+      <li><strong>Privacy Policy:</strong> <a href="https://render.com/privacy" target="_blank">https://render.com/privacy</a></li>
+      <li><strong>Location:</strong> United States data centers</li>
+    </ul>
+
+    <h3>4.4 MongoDB Atlas</h3>
+    <ul>
+      <li><strong>Purpose:</strong> Database hosting</li>
+      <li><strong>Data Stored:</strong> License information, user emails</li>
+      <li><strong>Privacy Policy:</strong> <a href="https://www.mongodb.com/legal/privacy-policy" target="_blank">https://www.mongodb.com/legal/privacy-policy</a></li>
+      <li><strong>Security:</strong> Encryption at rest and in transit</li>
+    </ul>
+
+    <h2>5. Data Sharing and Disclosure</h2>
+    
+    <p><strong>We do NOT sell, trade, or rent your personal information to third parties.</strong></p>
+    
+    <p>We may share information only in the following circumstances:</p>
+    <ul>
+      <li><strong>Service Providers:</strong> With third-party services listed above to operate our Extension</li>
+      <li><strong>Legal Requirements:</strong> When required by law, court order, or government request</li>
+      <li><strong>Security:</strong> To protect against fraud, abuse, or security threats</li>
+      <li><strong>Business Transfer:</strong> In connection with a merger, acquisition, or sale of assets</li>
+    </ul>
+
+    <h2>6. Data Retention</h2>
+    
+    <ul>
+      <li><strong>Active Licenses:</strong> Retained as long as license is active</li>
+      <li><strong>Expired Licenses:</strong> Retained for 90 days after expiry, then deleted</li>
+      <li><strong>Deactivated Licenses:</strong> Retained for 30 days, then deleted</li>
+      <li><strong>Questions/Answers:</strong> NOT stored (processed in real-time only)</li>
+      <li><strong>Server Logs:</strong> Retained for 30 days for security purposes</li>
+      <li><strong>Payment Records:</strong> Retained as required by law (typically 7 years)</li>
+    </ul>
+
+    <h2>7. Your Rights and Choices</h2>
+    
+    <h3>7.1 Access and Control</h3>
+    <ul>
+      <li><strong>View License:</strong> Check your license status in the extension popup</li>
+      <li><strong>Retrieve License:</strong> Use the "Forgot License" feature with your email</li>
+      <li><strong>Delete Data:</strong> Logout from the extension to clear local data</li>
+      <li><strong>Uninstall:</strong> Remove the extension to stop all data collection</li>
+    </ul>
+
+    <h3>7.2 Privacy Rights (GDPR/CCPA)</h3>
+    <p>If you are in the EU or California, you have additional rights:</p>
+    <ul>
+      <li><strong>Right to Access:</strong> Request a copy of your personal data</li>
+      <li><strong>Right to Rectification:</strong> Request correction of inaccurate data</li>
+      <li><strong>Right to Erasure:</strong> Request deletion of your data</li>
+      <li><strong>Right to Portability:</strong> Receive your data in a portable format</li>
+      <li><strong>Right to Object:</strong> Object to processing of your data</li>
+      <li><strong>Right to Withdraw Consent:</strong> Withdraw consent at any time</li>
+    </ul>
+
+    <h3>7.3 Exercising Your Rights</h3>
+    <p>To exercise any of these rights, contact us at the email provided in the Contact section below.</p>
+
+    <h2>8. Children's Privacy</h2>
+    
+    <p>This Extension is not intended for users under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately.</p>
+
+    <h2>9. International Data Transfers</h2>
+    
+    <p>Your information may be transferred to and processed in countries other than your country of residence. These countries may have different data protection laws. By using the Extension, you consent to such transfers. We ensure appropriate safeguards are in place to protect your data.</p>
+
+    <h2>10. Cookies and Tracking</h2>
+    
+    <p><strong>The Extension does NOT use cookies or tracking technologies.</strong></p>
+    <ul>
+      <li>No analytics or tracking scripts</li>
+      <li>No advertising or marketing cookies</li>
+      <li>No cross-site tracking</li>
+      <li>Only local storage for license authentication</li>
+    </ul>
+
+    <h2>11. Changes to This Privacy Policy</h2>
+    
+    <p>We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. When we make changes:</p>
+    <ul>
+      <li>We will update the "Last Updated" date at the top</li>
+      <li>Material changes will be notified via the extension or email</li>
+      <li>Continued use after changes constitutes acceptance</li>
+    </ul>
+
+    <h2>12. Compliance</h2>
+    
+    <p>This Extension and Privacy Policy comply with:</p>
+    <ul>
+      <li><strong>GDPR</strong> (General Data Protection Regulation - EU)</li>
+      <li><strong>CCPA</strong> (California Consumer Privacy Act - USA)</li>
+      <li><strong>Chrome Web Store Developer Program Policies</strong></li>
+      <li><strong>Firefox Add-on Policies</strong></li>
+      <li><strong>PCI DSS</strong> (via Razorpay for payments)</li>
+    </ul>
+
+    <h2>13. Data Breach Notification</h2>
+    
+    <p>In the unlikely event of a data breach that affects your personal information, we will:</p>
+    <ul>
+      <li>Notify affected users within 72 hours</li>
+      <li>Notify relevant authorities as required by law</li>
+      <li>Take immediate steps to secure the breach</li>
+      <li>Provide guidance on protective measures</li>
+    </ul>
+
+    <h2>14. Contact Us</h2>
+    
+    <div class="contact-info">
+      <p><strong>For questions, concerns, or requests regarding this Privacy Policy or your data:</strong></p>
+      <ul>
+        <li><strong>Email:</strong> support@quizassistant.com</li>
+        <li><strong>Website:</strong> <a href="https://extension-kiek.onrender.com" target="_blank">https://extension-kiek.onrender.com</a></li>
+        <li><strong>Response Time:</strong> We aim to respond within 48 hours</li>
+      </ul>
+      <p style="margin-top: 15px;"><strong>For GDPR/CCPA requests:</strong> Please include "Privacy Request" in the subject line and provide your license key or email address for verification.</p>
+    </div>
+
+    <h2>15. Consent</h2>
+    
+    <div class="highlight">
+      <p><strong>By installing and using the Quiz Answer Assistant extension, you acknowledge that you have read, understood, and agree to this Privacy Policy.</strong></p>
+    </div>
+
+    <p style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 14px;">
+      © 2026 Quiz Answer Assistant. All rights reserved.
+    </p>
+  </div>
+</body>
+</html>
