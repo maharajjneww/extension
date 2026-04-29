@@ -32,13 +32,20 @@ This folder contains a standalone privacy policy page that can be hosted separat
 4. Deploy instantly
 5. Get URL like: `https://quiz-assistant-privacy.vercel.app/`
 
-### Option 4: Render Static Site (FREE)
+### Option 4: Render Static Site (FREE) - RECOMMENDED
 
-1. Go to https://render.com/
-2. Create new Static Site
-3. Connect to your GitHub repo
-4. Set publish directory to `privacy-policy`
-5. Deploy
+1. Go to https://render.com/dashboard
+2. Click "New +" → "Static Site"
+3. Connect your GitHub repository
+4. Configure settings:
+   - **Name:** quiz-assistant-privacy
+   - **Branch:** main
+   - **Root Directory:** (leave empty)
+   - **Build Command:** (leave empty)
+   - **Publish Directory:** `privacy-policy`
+   - **Auto-Deploy:** Yes
+5. Click "Create Static Site"
+6. Get URL like: `https://quiz-assistant-privacy.onrender.com`
 
 ### Option 5: Your Own Domain
 
